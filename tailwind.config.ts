@@ -61,7 +61,28 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Health-themed colors
+				health: {
+					primary: 'hsl(var(--health-primary))',
+					'primary-light': 'hsl(var(--health-primary-light))',
+					secondary: 'hsl(var(--health-secondary))',
+					accent: 'hsl(var(--health-accent))',
+					success: 'hsl(var(--health-success))',
+					warning: 'hsl(var(--health-warning))',
+					surface: 'hsl(var(--health-surface))',
+					'surface-elevated': 'hsl(var(--health-surface-elevated))'
 				}
+			},
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-surface': 'var(--gradient-surface)',
+				'gradient-accent': 'var(--gradient-accent)'
+			},
+			boxShadow: {
+				'soft': 'var(--shadow-soft)',
+				'elevated': 'var(--shadow-elevated)',
+				'floating': 'var(--shadow-floating)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

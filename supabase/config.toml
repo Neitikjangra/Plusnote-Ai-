@@ -1,1 +1,7 @@
 project_id = "boxvcyksimmmwfptpdhh"
+
+[functions.chat-ai]
+verify_jwt = false
+
+[functions.generate-health-report]
+verify_jwt = false
