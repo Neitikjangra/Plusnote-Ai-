@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.generate-health-report]
 verify_jwt = false
+
+[functions.analyze-health-patterns]
+verify_jwt = false

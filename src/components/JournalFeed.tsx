@@ -24,9 +24,10 @@ interface HealthLog {
 
 interface JournalFeedProps {
   userId: string;
+  onLogsUpdate?: (count: number) => void;
 }
 
-export function JournalFeed({ userId }: JournalFeedProps) {
+export function JournalFeed({ userId, onLogsUpdate }: JournalFeedProps) {
   const [logs, setLogs] = useState<HealthLog[]>([]);
   const [showNewEntry, setShowNewEntry] = useState(false);
   const [newEntry, setNewEntry] = useState({
@@ -58,6 +59,7 @@ export function JournalFeed({ userId }: JournalFeedProps) {
       });
     } else {
       setLogs(data || []);
+      onLogsUpdate?.(data?.length || 0);
     }
   };
 
