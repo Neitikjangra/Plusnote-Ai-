@@ -32,15 +32,34 @@ serve(async (req) => {
       throw new Error(`Database error: ${logsError.message}`);
     }
 
-    if (!logs || logs.length < 7) {
+    if (!logs || logs.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'Not enough entries for analysis' }),
+        JSON.stringify({ error: 'No entries found for analysis' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
+    // If less than 7 entries, pad with neutral data for missing days
+    const paddedLogs = [];
+    for (let i = 0; i < 7; i++) {
+      if (i < logs.length) {
+        paddedLogs.push(logs[i]);
+      } else {
+        // Create a placeholder for missing days
+        const date = new Date();
+        date.setDate(date.getDate() - (7 - i - 1));
+        paddedLogs.push({
+          log_date: date.toISOString().split('T')[0],
+          entry_text: 'No entry for this day',
+          mood_rating: 5,
+          sleep_rating: 5,
+          tags: null
+        });
+      }
+    }
+
     // Reverse to get chronological order (oldest first)
-    const chronologicalLogs = logs.reverse();
+    const chronologicalLogs = paddedLogs.reverse();
 
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     if (!geminiApiKey) {
