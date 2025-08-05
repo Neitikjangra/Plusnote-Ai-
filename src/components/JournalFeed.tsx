@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Calendar, Heart, Moon, Tag } from 'lucide-react';
+import { Plus, Calendar, Heart, Moon, Tag, Edit2, Trash2, X, Check } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface HealthLog {
@@ -30,7 +30,15 @@ interface JournalFeedProps {
 export function JournalFeed({ userId, onLogsUpdate }: JournalFeedProps) {
   const [logs, setLogs] = useState<HealthLog[]>([]);
   const [showNewEntry, setShowNewEntry] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newEntry, setNewEntry] = useState({
+    entry_text: '',
+    mood_rating: [5],
+    sleep_rating: [5],
+    tags: [] as string[],
+    tagInput: ''
+  });
+  const [editEntry, setEditEntry] = useState({
     entry_text: '',
     mood_rating: [5],
     sleep_rating: [5],
@@ -125,6 +133,112 @@ export function JournalFeed({ userId, onLogsUpdate }: JournalFeedProps) {
       setShowNewEntry(false);
       fetchLogs();
     }
+  };
+
+  const handleEditLog = (log: HealthLog) => {
+    setEditingId(log.id);
+    setEditEntry({
+      entry_text: log.entry_text,
+      mood_rating: [log.mood_rating || 5],
+      sleep_rating: [log.sleep_rating || 5],
+      tags: log.tags || [],
+      tagInput: ''
+    });
+  };
+
+  const handleUpdateEntry = async (logId: string) => {
+    if (!editEntry.entry_text.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Entry required",
+        description: "Please write something about your day.",
+      });
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase
+      .from('health_logs')
+      .update({
+        entry_text: editEntry.entry_text,
+        mood_rating: editEntry.mood_rating[0],
+        sleep_rating: editEntry.sleep_rating[0],
+        tags: editEntry.tags.length > 0 ? editEntry.tags : null,
+      })
+      .eq('id', logId);
+
+    setLoading(false);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error updating entry",
+        description: error.message,
+      });
+    } else {
+      toast({
+        title: "Entry updated!",
+        description: "Your health log has been updated.",
+      });
+      setEditingId(null);
+      fetchLogs();
+    }
+  };
+
+  const handleDeleteLog = async (logId: string) => {
+    if (!confirm('Are you sure you want to delete this entry?')) {
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase
+      .from('health_logs')
+      .delete()
+      .eq('id', logId);
+
+    setLoading(false);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error deleting entry",
+        description: error.message,
+      });
+    } else {
+      toast({
+        title: "Entry deleted!",
+        description: "Your health log has been deleted.",
+      });
+      fetchLogs();
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditEntry({
+      entry_text: '',
+      mood_rating: [5],
+      sleep_rating: [5],
+      tags: [],
+      tagInput: ''
+    });
+  };
+
+  const handleAddEditTag = () => {
+    if (editEntry.tagInput.trim() && !editEntry.tags.includes(editEntry.tagInput.trim())) {
+      setEditEntry(prev => ({
+        ...prev,
+        tags: [...prev.tags, prev.tagInput.trim()],
+        tagInput: ''
+      }));
+    }
+  };
+
+  const handleRemoveEditTag = (tagToRemove: string) => {
+    setEditEntry(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
   };
 
   const getMoodEmoji = (rating: number) => {
@@ -271,6 +385,26 @@ export function JournalFeed({ userId, onLogsUpdate }: JournalFeedProps) {
                     <span className="font-medium">{format(new Date(log.log_date), 'MMMM d, yyyy')}</span>
                   </div>
                   <div className="flex items-center gap-4">
+                    {editingId !== log.id && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditLog(log)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteLog(log.id)}
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                     {log.mood_rating && (
                       <div className="flex items-center gap-1">
                         <Heart className="h-4 w-4 text-health-secondary" />
@@ -287,15 +421,110 @@ export function JournalFeed({ userId, onLogsUpdate }: JournalFeedProps) {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground mb-3">{log.entry_text}</p>
-                {log.tags && log.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {log.tags.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
+                {editingId === log.id ? (
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor={`edit-entry-${log.id}`}>Edit your entry...</Label>
+                      <Textarea
+                        id={`edit-entry-${log.id}`}
+                        value={editEntry.entry_text}
+                        onChange={(e) => setEditEntry(prev => ({ ...prev, entry_text: e.target.value }))}
+                        className="min-h-[120px]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Heart className="h-4 w-4 text-health-secondary" />
+                          <Label>Mood: {getMoodEmoji(editEntry.mood_rating[0])} ({editEntry.mood_rating[0]}/10)</Label>
+                        </div>
+                        <Slider
+                          value={editEntry.mood_rating}
+                          onValueChange={(value) => setEditEntry(prev => ({ ...prev, mood_rating: value }))}
+                          max={10}
+                          min={1}
+                          step={1}
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Moon className="h-4 w-4 text-health-accent" />
+                          <Label>Sleep Quality: {getSleepEmoji(editEntry.sleep_rating[0])} ({editEntry.sleep_rating[0]}/10)</Label>
+                        </div>
+                        <Slider
+                          value={editEntry.sleep_rating}
+                          onValueChange={(value) => setEditEntry(prev => ({ ...prev, sleep_rating: value }))}
+                          max={10}
+                          min={1}
+                          step={1}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-health-success" />
+                        <Label>Tags</Label>
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Add a tag"
+                          value={editEntry.tagInput}
+                          onChange={(e) => setEditEntry(prev => ({ ...prev, tagInput: e.target.value }))}
+                          onKeyPress={(e) => e.key === 'Enter' && handleAddEditTag()}
+                        />
+                        <Button type="button" onClick={handleAddEditTag} variant="outline">
+                          Add
+                        </Button>
+                      </div>
+                      {editEntry.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {editEntry.tags.map((tag, index) => (
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
+                              onClick={() => handleRemoveEditTag(tag)}
+                            >
+                              {tag} ×
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="outline" onClick={handleCancelEdit}>
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
+                      </Button>
+                      <Button 
+                        onClick={() => handleUpdateEntry(log.id)} 
+                        disabled={loading} 
+                        className="bg-gradient-primary"
+                      >
+                        <Check className="h-4 w-4 mr-2" />
+                        {loading ? 'Updating...' : 'Update'}
+                      </Button>
+                    </div>
                   </div>
+                ) : (
+                  <>
+                    <p className="text-foreground mb-3">{log.entry_text}</p>
+                    {log.tags && log.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {log.tags.map((tag, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
