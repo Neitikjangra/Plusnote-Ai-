@@ -1,8 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
-import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
-import { Marked } from "https://deno.land/x/markdown@v2.0.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -178,9 +176,8 @@ This report is generated from self-reported health journal entries and is not a 
 
 // Function to generate PDF from markdown content
 async function generatePDF(content: string): Promise<Uint8Array> {
-  // Convert markdown to HTML
-  const marked = new Marked();
-  const htmlContent = marked.parse(content);
+  // Convert basic markdown to HTML
+  const htmlContent = convertMarkdownToHTML(content);
   
   // Create a complete HTML document with styling
   const fullHTML = `
@@ -344,4 +341,20 @@ startxref
     .join('\n');
 
   return pdfHeader + cleanContent + pdfFooter;
+}
+
+// Simple markdown to HTML converter
+function convertMarkdownToHTML(markdown: string): string {
+  return markdown
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>')
+    .replace(/^(.*)$/gm, '<p>$1</p>')
+    .replace(/<p><\/p>/g, '')
+    .replace(/<p>(<h[1-6]>.*<\/h[1-6]>)<\/p>/g, '$1')
+    .replace(/---/g, '<hr>');
 }
