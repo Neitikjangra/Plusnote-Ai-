@@ -24,6 +24,7 @@ interface ReportGeneratorProps {
 export function ReportGenerator({ userId }: ReportGeneratorProps) {
   const [showDialog, setShowDialog] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [currentReport, setCurrentReport] = useState<Report | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const { toast } = useToast();
@@ -109,6 +110,44 @@ ${report.content}
     });
   };
 
+  const downloadPDF = async (report: Report) => {
+    try {
+      setLoading(true);
+      
+      // Call the edge function to generate PDF
+      const { data, error } = await supabase.functions.invoke('generate-health-report', {
+        body: { userId, format: 'pdf' }
+      });
+
+      if (error) throw error;
+
+      // The response should be a PDF blob
+      const blob = new Blob([data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `health-report-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "PDF Generated!",
+        description: "Your health report has been downloaded as a PDF.",
+      });
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast({
+        variant: "destructive",
+        title: "PDF Generation Failed",
+        description: "Sorry, I couldn't generate the PDF. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       {/* Generate Report Button */}
@@ -156,15 +195,27 @@ ${report.content}
                     Generated {format(new Date(currentReport.created_at), 'MMM d, yyyy')}
                   </span>
                 </div>
-                <Button
-                  onClick={() => downloadReport(currentReport)}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Download
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => downloadReport(currentReport)}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Markdown
+                  </Button>
+                  <Button
+                    onClick={() => downloadPDF(currentReport)}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                    disabled={loading}
+                  >
+                    <Download className="h-4 w-4" />
+                    PDF
+                  </Button>
+                </div>
               </div>
 
               {/* Report Content */}
@@ -187,10 +238,19 @@ ${report.content}
                 </Button>
                 <Button
                   onClick={() => downloadReport(currentReport)}
-                  className="bg-gradient-primary"
+                  variant="outline"
+                  className="flex items-center gap-2"
                 >
                   <Download className="mr-2 h-4 w-4" />
-                  Download Report
+                  Markdown
+                </Button>
+                <Button
+                  onClick={() => downloadPDF(currentReport)}
+                  className="bg-gradient-primary flex items-center gap-2"
+                  disabled={loading}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download PDF
                 </Button>
               </div>
             </div>
