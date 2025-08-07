@@ -6,8 +6,9 @@ import { ChatBot } from '@/components/ChatBot';
 import { ReportGenerator } from '@/components/ReportGenerator';
 import { DashboardStats } from '@/components/DashboardStats';
 import { Button } from '@/components/ui/button';
-import { LogOut, Heart } from 'lucide-react';
+import { LogOut, Heart, User as UserIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface DashboardProps {
   user: User;
@@ -17,6 +18,7 @@ interface DashboardProps {
 export function Dashboard({ user, onSignOut }: DashboardProps) {
   const { toast } = useToast();
   const [entryCount, setEntryCount] = useState(0);
+  const { profile, loading: profileLoading, getDisplayName } = useUserProfile(user.id);
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -49,9 +51,12 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
           </div>
           
           <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">
-              Welcome, {user.email}
-            </span>
+            <div className="flex items-center gap-2">
+              <UserIcon className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                Welcome, {profileLoading ? 'Loading...' : getDisplayName()}
+              </span>
+            </div>
             <Button
               onClick={handleSignOut}
               variant="outline"
@@ -88,7 +93,7 @@ export function Dashboard({ user, onSignOut }: DashboardProps) {
 
       {/* Fixed Components */}
       <ChatBot userId={user.id} />
-      <ReportGenerator userId={user.id} />
+      <ReportGenerator userId={user.id} patientName={getDisplayName()} />
     </div>
   );
 }

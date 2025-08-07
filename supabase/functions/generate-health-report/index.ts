@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, format: outputFormat = 'text' } = await req.json();
+    const { userId, format: outputFormat = 'text', patientName = 'Patient' } = await req.json();
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -59,14 +59,18 @@ serve(async (req) => {
 
     const systemPrompt = `You are a health data analyst creating a medical-style summary report for a patient to share with their doctor. Analyze the provided health journal entries and create a comprehensive, professional report.
 
+PATIENT: ${patientName}
+REPORTING PERIOD: Last 30 Days
+
 REPORT STRUCTURE:
 1. **Executive Summary** - Brief overview of the reporting period and key findings
-2. **Symptom Analysis** - Most frequent symptoms, patterns, and timing
+2. **Symptom Analysis** - Most frequent symptoms, patterns, and timing  
 3. **Lifestyle Factors** - Sleep patterns, mood trends, diet observations
 4. **Potential Correlations** - Any patterns between lifestyle factors and symptoms
 5. **Recommendations for Healthcare Provider** - Key discussion points for medical consultation
 
 GUIDELINES:
+- Address the report for "${patientName}"
 - Use professional, medical-style language
 - Focus on objective observations, not diagnoses
 - Highlight patterns and frequencies
@@ -75,10 +79,10 @@ GUIDELINES:
 - Format for easy physician review
 - Keep medical disclaimer
 
-Health Journal Data (Last 30 Days):
+Health Journal Data for ${patientName} (Last 30 Days):
 ${JSON.stringify(healthData, null, 2)}
 
-Generate a comprehensive health report that a patient can confidently share with their healthcare provider.`;
+Generate a comprehensive health report that ${patientName} can confidently share with their healthcare provider.`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
@@ -129,7 +133,9 @@ Generate a comprehensive health report that a patient can confidently share with
       'Unable to generate report at this time.';
 
     // Add medical disclaimer
-    const finalReport = `${reportContent}
+    const finalReport = `# Health Report for ${patientName}
+
+${reportContent}
 
 ---
 

@@ -19,9 +19,10 @@ interface Report {
 
 interface ReportGeneratorProps {
   userId: string;
+  patientName?: string;
 }
 
-export function ReportGenerator({ userId }: ReportGeneratorProps) {
+export function ReportGenerator({ userId, patientName }: ReportGeneratorProps) {
   const [showDialog, setShowDialog] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -35,7 +36,7 @@ export function ReportGenerator({ userId }: ReportGeneratorProps) {
     try {
       // Call the AI edge function to generate report
       const { data, error } = await supabase.functions.invoke('generate-health-report', {
-        body: { userId }
+        body: { userId, patientName: patientName || 'Patient' }
       });
 
       if (error) throw error;
@@ -82,6 +83,7 @@ export function ReportGenerator({ userId }: ReportGeneratorProps) {
     const content = `
 # ${report.title}
 
+**Patient:** ${patientName || 'Patient'}
 **Date Range:** ${format(new Date(report.date_range_start), 'MMM d, yyyy')} - ${format(new Date(report.date_range_end), 'MMM d, yyyy')}
 **Generated:** ${format(new Date(report.created_at), 'MMM d, yyyy')}
 
@@ -116,7 +118,7 @@ ${report.content}
       
       // Call the edge function to generate PDF
       const { data, error } = await supabase.functions.invoke('generate-health-report', {
-        body: { userId, format: 'pdf' }
+        body: { userId, format: 'pdf', patientName: patientName || 'Patient' }
       });
 
       if (error) throw error;
