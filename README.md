@@ -1,28 +1,106 @@
-# Welcome to your Lovable project
+# 🌿 Plusnote – Your AI Health Journal Companion
 
-## Project info
+Plusnote is a smart, emotionally intelligent health journaling app that helps users naturally track their daily health experiences, identify recurring patterns, and generate insightful summaries to assist during doctor visits. It's not a clinical tool — it's your AI-powered health memory companion.
 
-**URL**: https://lovable.dev/projects/3db780bd-35fd-43e7-bb58-ab12db801c1a
+---
 
-## How can I edit this code?
+## 🚀 Core Objective
 
-There are several ways of editing your application.
+**Plusnote empowers users to track their day-to-day health experiences (like journaling), and uses AI to detect recurring patterns between food, sleep, symptoms, and mood.**
 
-**Use Lovable**
+At the click of a button, users can generate a clean, medical-style summary of their health logs to share with a healthcare professional.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/3db780bd-35fd-43e7-bb58-ab12db801c1a) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🧠 Core Features
 
-**Use your preferred IDE**
+### 1. AI Journal Companion (Chatbot Agent)
+- A warm, context-aware AI assistant that:
+  - Prompts users daily (e.g., “What did you eat today?”, “How are you feeling?”)
+  - References previous logs to provide contextual insights.
+  - Answers smart health questions such as:
+    - “Why do I get headaches after eating late?”
+    - “Did I log bloating last week too?”
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 2. Daily Health Logging Feed
+- Instagram-style daily cards that show:
+  - Timestamp
+  - Free-text entries (e.g., “Ate pizza, felt uneasy later”)
+  - Optional symptom/mood/emotion tags
+  - Sleep quality slider or emoji rating
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 3. AI Pattern Extraction + Report Generator
+- Tap “Generate Report” to get a structured summary:
+  - Recurring symptoms and lifestyle triggers
+  - Chronological issue log
+  - Doctor-ready talking points
+  - Downloadable as a PDF
 
-Follow these steps:
+### 4. Authentication & Secure Storage
+- Email/password authentication via **Firebase Auth** or **Supabase Auth**
+- Journals are securely stored per user in **Supabase (PostgreSQL)**
+- Multi-device sync support
 
-```sh
+### 5. 🔁 Weekly Mood Tracker (Advanced)
+- Tracks dominant mood of last 7 days:
+  - Happy, Calm, Neutral, Anxious, Angry, Low, Sick, Excited
+- Displays horizontal emoji bar
+- Shifts with every new entry
+
+### 6. 🧠 Overall Health Score
+- AI reads the emotional and physical tone across the last 7 entries
+- Calculates a health score (0–100):
+  - 🔴 Poor (0–30)
+  - 🟠 Fair (31–60)
+  - 🟡 Good (61–80)
+  - 🟢 Excellent (81–100)
+- Auto-updated and shown as a colored bar with a short summary
+
+---
+
+
+
+## 💻 Tech Stack
+
+| Layer           | Tech                             |
+|----------------|----------------------------------|
+| Frontend        | React.js + TailwindCSS (or Flutter) |
+| Backend         | Node.js + Express **or** Python + FastAPI |
+| Authentication  | Supabase Auth / Firebase Auth     |
+| Database        | Supabase (PostgreSQL)             |
+| AI Engine       | Gemini API (Google Multimodal LLM) |
+| PDF Generation  | React-to-PDF / ReportLab (Python) |
+| Hosting         | Vercel (frontend), Render/Firebase (backend) |
+
+---
+
+
+---
+
+## 🧩 UX Design Requirements
+
+- Clean, modern UI with soft health-themed palette (greens/blues)
+- Floating chatbot icon (bottom-right on every screen)
+- Center-aligned “Generate Report” button
+- Minimalistic daily cards with date, entry text, and tags
+- Mobile-first, fully responsive
+
+---
+
+## 📊 AI Engine Responsibilities
+
+- Parse natural language journal entries
+- Extract structured data: symptoms, moods, foods, times
+- Detect correlations: e.g., "late-night meal → headache"
+- Summarize logs into doctor-ready reports
+- Provide emotionally warm and reflective journaling interaction
+
+---
+
+## ✅ Setup & Usage Guide
+
+
+```
 # Step 1: Clone the repository using the project's Git URL.
 git clone <YOUR_GIT_URL>
 
@@ -36,38 +114,48 @@ npm i
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Report Output Example :
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+🧾 Plusnote Health Summary
 
-**Use GitHub Codespaces**
+🗓 Date Range: July 30 – August 6
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+📌 Recurring Symptoms:
+- Bloating (4 times)
+- Headache (2 times after late meals)
 
-## What technologies are used for this project?
+🍔 Lifestyle Triggers:
+- Heavy food at night → uneasiness
+- Poor sleep → low energy next day
 
-This project is built with:
+🗣️ Doctor Talking Points:
+- Explore digestive issues related to dinner timing
+- Sleep routine adjustment may improve energy
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+📊 Mood Trend:
+🟩 Calm 🟨 Sick 🟥 Low 🟨 Sick 🟩 Calm 🟩 Calm 🟩 Neutral
 
-## How can I deploy this project?
+🏥 Health Score: 74 – Good
+Summary: "You’ve been mostly calm and recovering this week. Keep up the routine improvements."
 
-Simply open [Lovable](https://lovable.dev/projects/3db780bd-35fd-43e7-bb58-ab12db801c1a) and click on Share -> Publish.
 
-## Can I connect a custom domain to my Lovable project?
 
-Yes, you can!
+🧠 Future Enhancements :
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+📑 Doctor View Mode with annotations
+🔔 Smart Reminders for journal entries
+📱 Mobile app version (Flutter)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+
+❤️ Philosophy
+Plusnote is not a medical app.
+It’s a health memory tool — built to help you reflect on your body, track patterns, and prepare better for doctor visits.
+It’s private, AI-enhanced, and deeply human.
+
+
+🙌 Built with care by the Plusnote Team
+
+Would you like a downloadable version of this as a `README.md` file or want help generating a matching landing page?
+
+
